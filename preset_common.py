@@ -1,15 +1,18 @@
 import os
 import sys
-import argparse
+import requests
 from bs4 import BeautifulSoup
 
 STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
+
+PUBLISHED_FILE_DETAILS_ENDPOINT = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1"
 
 
 class Mod:
     def __init__(self, name, id):
         self.name = name
         self.id = id
+        self._details = None
 
     def __eq__(self, other):
         if not isinstance(other, Mod):
@@ -21,11 +24,35 @@ class Mod:
     def __repr__(self):
         return self.name + " (" + STEAM_URL_FORMAT + self.id + ")"
 
+    def get_details(self, force_refresh=False):
+        if self._details is None:
+            data = [("itemcount", "1"), ("publishedfileids[0]", self.id)]
+            response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
+            if response.status_code != 200:
+                raise Exception("Steam API query failed for '" + self.name + "'")
+            self._details = response.json()["response"]["publishedfiledetails"][0]
+        return self._details
+
+    def get_size(self):
+        return self.get_details()["file_size"]
+
 
 class Preset:
     def __init__(self, name, mods):
         self.name = name
         self.mods = mods
+
+
+def __getPath():
+    args = sys.argv
+    if len(args) > 1:  # A file has been dragged onto the script
+        return args[1]
+    print("Where is the preset located?")
+    path = input(">")
+    if os.path.exists(path):
+        return path
+    raise Exception("Please enter a valid path.")
+
 
 def __getSoup(path):
     if not os.path.exists(path):
@@ -60,7 +87,9 @@ def __getMods(soup):
     return mods
 
 
-def getPreset(path):
+def getPreset(path=None):
+    if path == None:
+        path = __getPath()
     soup = __getSoup(path)
     title = __metaGetTitle(soup)
     mods = __getMods(soup)
