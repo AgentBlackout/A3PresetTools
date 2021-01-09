@@ -20,7 +20,7 @@ preset = common.getPreset(args.preset)
 loadString = ""
 for mod in preset.mods:
     if args.escape:
-        loadString += "@" + mod.name.replace(" ", "\\ ")
+        loadString += "@" + mod.name.replace(" ", "\\ ") + ";"
     else:
         loadString += "@" + mod.name + ";"
 
