@@ -25,7 +25,7 @@ class Mod:
         return self.name + " (" + STEAM_URL_FORMAT + self.id + ")"
 
     def get_details(self, force_refresh=False):
-        if self._details is None:
+        if self._details is None or force_refresh:
             data = [("itemcount", "1"), ("publishedfileids[0]", self.id)]
             response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
             if response.status_code != 200:
