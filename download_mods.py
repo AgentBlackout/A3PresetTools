@@ -101,7 +101,7 @@ if not args.output_path is None:
 
 
 def rename_files_lower(directory):
-    for mod_file in glob.glob(directory + "/*"):
+    for mod_file in glob.glob(glob.escape(directory) + "/*"):
         mod_file_name = mod_file.split("/")[-1]
         shutil.move(mod_file, directory + "/" + mod_file_name.lower())
 
