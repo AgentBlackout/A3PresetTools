@@ -1,10 +1,15 @@
 import preset_common as common
+import argparse
 
-preset = common.getPreset()
+parser = argparse.ArgumentParser(prog="extract_load_order.py", usage="%(prog)s [preset]",
+    description="Reads the mods out in assigned load order formatted for use in the -mods argument.")
+parser.add_argument("preset")
+args = parser.parse_args()
+
+preset = common.getPreset(args.preset)
 
 loadString = ""
 for mod in preset.mods:
     loadString += "@" + mod.name + ";"
 
 print(loadString)
-input()

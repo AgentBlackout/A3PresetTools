@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 from bs4 import BeautifulSoup
 
 STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
@@ -25,18 +26,6 @@ class Preset:
     def __init__(self, name, mods):
         self.name = name
         self.mods = mods
-
-
-def __getPath():
-    args = sys.argv
-    if len(args) > 1:  # A file has been dragged onto the script
-        return args[1]
-    print("Where is the preset located?")
-    path = input(">")
-    if os.path.exists(path):
-        return path
-    raise Exception("Please enter a valid path.")
-
 
 def __getSoup(path):
     if not os.path.exists(path):
@@ -71,9 +60,7 @@ def __getMods(soup):
     return mods
 
 
-def getPreset(path=None):
-    if path == None:
-        path = __getPath()
+def getPreset(path):
     soup = __getSoup(path)
     title = __metaGetTitle(soup)
     mods = __getMods(soup)

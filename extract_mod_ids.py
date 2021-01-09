@@ -1,10 +1,21 @@
 import preset_common as common
+import argparse
 
-preset = common.getPreset()
+parser = argparse.ArgumentParser(prog="extract_load_order.py", usage="%(prog)s [preset] [options]",
+    description="Reads the mod ids to a .txt file.")
+parser.add_argument("preset")
+parser.add_argument("-o", "--output", help="The file to write mod ids to (defaults to mods.txt).")
+args = parser.parse_args()
+
+preset = common.getPreset(args.preset)
 
 modIds = ""
 for mod in preset.mods:
     modIds += str(mod.id) + "\n"
 
-with open("mods.txt", "w") as f:
+outputPath = args.output
+if outputPath is None:
+    outputPath = "mods.txt"
+
+with open(outputPath, "w") as f:
     f.write(modIds)
