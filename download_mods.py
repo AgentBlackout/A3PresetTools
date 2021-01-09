@@ -81,14 +81,14 @@ for mod in preset.mods:
 steamcmd_cmd.append("+quit")
 
 print("Running steamcmd...")
-# steamcmd = subprocess.run(steamcmd_cmd)
+steamcmd = subprocess.run(steamcmd_cmd)
 print("steamcmd done.")
 
 # Apparently 'not var is None' is fine but 'not var is 0' is worthy of a syntax warning.
-# if steamcmd.returncode != 0:
-#     raise Exception(
-#         "steamcmd failed for some reason. Please review its output and try again."
-#     )
+if steamcmd.returncode != 0:
+    raise Exception(
+        "steamcmd failed for some reason. Please review its output and try again."
+    )
 
 if not args.output_path is None:
     print("Moving mods to [output-path]... ", end="")
