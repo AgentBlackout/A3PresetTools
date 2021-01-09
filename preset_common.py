@@ -24,23 +24,33 @@ class Mod:
     def __repr__(self):
         return self.name + " (" + STEAM_URL_FORMAT + self.id + ")"
 
-    def get_details(self, force_refresh=False):
-        if self._details is None or force_refresh:
-            data = [("itemcount", "1"), ("publishedfileids[0]", self.id)]
-            response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
-            if response.status_code != 200:
-                raise Exception("Steam API query failed for '" + self.name + "'")
-            self._details = response.json()["response"]["publishedfiledetails"][0]
-        return self._details
-
     def get_size(self):
-        return self.get_details()["file_size"]
+        return self._details["file_size"]
 
 
 class Preset:
     def __init__(self, name, mods):
         self.name = name
         self.mods = mods
+
+    def query_details(self, force_refresh=False):
+        if self.mods[0]._details is None or force_refresh:
+            i = 0
+            data = [("itemcount", len(self.mods))]
+            for mod in self.mods:
+                data.append(("publishedfileids[" + str(i) + "]", mod.id))
+                i += 1
+            
+            response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
+            if response.status_code != 200:
+                raise Exception("Steam API query failed for '" + self.name + "'")
+            details = response.json()["response"]["publishedfiledetails"]
+
+            i = 0
+            for mod in self.mods:
+                mod._details = details[i]
+                i += 1
+
 
 
 def __getPath():
