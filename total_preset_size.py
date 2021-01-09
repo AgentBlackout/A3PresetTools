@@ -2,10 +2,14 @@ import preset_common as common
 import argparse
 import math
 
-parser = argparse.ArgumentParser(prog="total_preset_size.py", usage="%(prog)s [preset]",
-    description="Computes the combined size of all mods in a preset.")
+parser = argparse.ArgumentParser(
+    prog="total_preset_size.py",
+    usage="%(prog)s [preset]",
+    description="Computes the combined size of all mods in a preset.",
+)
 parser.add_argument("preset")
 args = parser.parse_args()
+
 
 def format_bytes(num):
     num = int(num)
@@ -18,6 +22,7 @@ def format_bytes(num):
         return str(round(num / 10 ** 3, 2)) + " mb"
     else:
         return str(num) + " bytes"
+
 
 preset = common.getPreset()
 preset.query_details()

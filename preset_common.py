@@ -4,8 +4,9 @@ import requests
 from bs4 import BeautifulSoup
 
 STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
-
-PUBLISHED_FILE_DETAILS_ENDPOINT = "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1"
+PUBLISHED_FILE_DETAILS_ENDPOINT = (
+    "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1"
+)
 
 
 class Mod:
@@ -43,7 +44,7 @@ class Preset:
             for mod in self.mods:
                 data.append(("publishedfileids[" + str(i) + "]", mod.id))
                 i += 1
-            
+
             response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
             if response.status_code != 200:
                 raise Exception("Steam API query failed for '" + self.name + "'")
@@ -53,7 +54,6 @@ class Preset:
             for mod in self.mods:
                 mod._details = details[i]
                 i += 1
-
 
 
 def __getPath():

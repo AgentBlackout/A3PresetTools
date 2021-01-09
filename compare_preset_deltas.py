@@ -3,8 +3,11 @@ import sys
 import os
 import argparse
 
-parser = argparse.ArgumentParser(prog="compare_preset_deltas.py", usage="%(prog)s [preset1] [preset2]",
-    description="Compared two arma preset files.")
+parser = argparse.ArgumentParser(
+    prog="compare_preset_deltas.py",
+    usage="%(prog)s [preset1] [preset2]",
+    description="Compared two arma preset files.",
+)
 parser.add_argument("preset1")
 parser.add_argument("preset2")
 args = parser.parse_args()
