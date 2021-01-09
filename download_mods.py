@@ -2,6 +2,7 @@ import preset_common as common
 import subprocess
 import argparse
 import shutil
+import glob
 import os
 
 APPID = "107410"
@@ -95,4 +96,16 @@ if not args.output_path is None:
             args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
             args.output_path + "/@" + mod.name,
         )
+    print("Done")
+
+if sys.platform == "linux" or sys.platform == "linux2":
+    print("Renaming mod files to lower case (for linux compatibility)... ", end="")
+    for mod in preset.mods:
+        for mod_file in glob.glob(
+            args.output_path + "/@" + mod.name + "/**", recursive=True
+        ):
+            mod_file_split = mod_file.split(mod.name)
+            shutil.move(
+                mod_file, mod_file_split[0] + mod.name + mod_file_split[1].lower()
+            )
     print("Done")
