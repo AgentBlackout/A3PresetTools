@@ -36,10 +36,14 @@ for possible_path in possible_mod_paths:
     for mod in possible_path:
         keys.extend(glob.glob(args.input + "/" + mod + "/*.bikey", recursive=True))
         keys.extend(
-            glob.glob(args.input + "/" + mod + "/[kK]eys/*.bikey", recursive=True)
+            glob.glob(
+                args.input + "/" + glob.escape(mod) + "/[kK]eys/*.bikey", recursive=True
+            )
         )
         keys.extend(
-            glob.glob(args.input + "/" + mod + "/[kK]ey/*.bikey", recursive=True)
+            glob.glob(
+                args.input + "/" + glob.escape(mod) + "/[kK]ey/*.bikey", recursive=True
+            )
         )
 
     if len(keys) == 0:
