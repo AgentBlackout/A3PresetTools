@@ -2,7 +2,7 @@ import preset_common as common
 import argparse
 
 parser = argparse.ArgumentParser(prog="extract_load_order.py", usage="%(prog)s [preset]",
-    description="Reads the mods out in assigned load order formatted for use in the -mods argument.")
+    description="Reads a presets mods out in the assigned load order formatted for use in the arma '-mods=' argument.")
 parser.add_argument("preset")
 args = parser.parse_args()
 
