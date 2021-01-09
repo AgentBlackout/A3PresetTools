@@ -3,6 +3,7 @@ import subprocess
 import argparse
 import shutil
 import glob
+import sys
 import os
 
 APPID = "107410"
