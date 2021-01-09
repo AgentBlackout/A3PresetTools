@@ -56,11 +56,12 @@ if args.update:
     if not args.output_path is None:
         print("Moving existing mods to [download-path]... ", end="")
         for mod in preset.mods:
-            # Move mods in the preset from [output-path] to steamcmds actual download path.
-            shutil.move(
-                args.output_path + "/@" + mod.name,
-                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
-            )
+            if os.path.isdir(args.output_path + "/@" + mod.name):
+                # Move mods in the preset from [output-path] to steamcmds actual download path.
+                shutil.move(
+                    args.output_path + "/@" + mod.name,
+                    args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+                )
         print("Done")
     else:
         raise Exception("You must set -o/--output-path to enable --update mode.")
