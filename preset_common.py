@@ -89,6 +89,8 @@ def __getMod(tr):
     name = tr.td.text
     url = tr.a.text
     id = url[len(STEAM_URL_FORMAT) :]
+    if sys.platform == "linux" or sys.platform == "linux2":
+        name = name.replace(" ", "_")
     return Mod(name, id)
 
 

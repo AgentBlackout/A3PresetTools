@@ -49,7 +49,11 @@ for possible_path in possible_mod_paths:
         )
 
     if len(keys) == 0:
-        raise Exception("Key was not found for '" + possible_path[0] + "'")
+        raise Exception(
+            "Key was not found for '"
+            + possible_path[0]
+            + "'. You cannot use signing unless all client mods are signed."
+        )
     all_keys.extend(keys)
 
 
