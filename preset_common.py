@@ -25,7 +25,10 @@ class Mod:
         return self.name + " (" + STEAM_URL_FORMAT + self.id + ")"
 
     def get_size(self):
-        return self._details["file_size"]
+        if self._details is None:
+            raise Exception("Details have not been queried")
+        else:
+            return self._details["file_size"]
 
 
 class Preset:
