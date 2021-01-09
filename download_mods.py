@@ -99,21 +99,18 @@ if not args.output_path is None:
         )
     print("Done")
 
+
+def rename_files_lower(directory):
+    for mod_file in glob.glob(directory + "/*"):
+        mod_file_name = mod_file.split("/")[-1]
+        shutil.move(mod_file, directory + "/" + mod_file_name.lower())
+
+        if os.path.isdir(mod_file):
+            rename_files_lower(directory + "/" + mod_file_name.lower())
+
+
 if sys.platform == "linux" or sys.platform == "linux2":
     print("Renaming mod files to lower case (for linux compatibility)... ", end="")
     for mod in preset.mods:
-        for mod_file in glob.glob(
-            args.output_path + "/@" + mod.name + "/**/", recursive=True
-        ):
-            mod_file_split = mod_file.split(mod.name)
-            shutil.move(
-                mod_file, mod_file_split[0] + mod.name + mod_file_split[1].lower()
-            )
-        for mod_file in glob.glob(
-            args.output_path + "/@" + mod.name + "/**", recursive=True
-        ):
-            mod_file_split = mod_file.split(mod.name)
-            shutil.move(
-                mod_file, mod_file_split[0] + mod.name + mod_file_split[1].lower()
-            )
+        rename_files_lower(args.output_path + "/@" + mod.name)
     print("Done")
