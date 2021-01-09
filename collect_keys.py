@@ -43,7 +43,7 @@ for possible_path in possible_mod_paths:
         )
 
     if len(keys) == 0:
-        raise Exception("Key was not found for '" + mod + "'")
+        raise Exception("Key was not found for '" + possible_path[0] + "'")
     all_keys.extend(keys)
 
 
