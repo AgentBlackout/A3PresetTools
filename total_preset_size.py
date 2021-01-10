@@ -33,7 +33,7 @@ def get_size(mod):
 
 
 total_size = 0
-sorted(preset.mods, key=get_size)
+preset.mods = sorted(preset.mods, key=get_size)
 for mod in preset.mods:
     mod_size = mod.get_size()
     total_size += mod_size
