@@ -34,7 +34,7 @@ parser.add_argument(
 parser.add_argument(
     "-o",
     "--output-path",
-    help="directory to move downloaded mods to. if this is set mods will be renamed to @\{mod_name\}. \
+    help=r"directory to move downloaded mods to. if this is set mods will be renamed to @{mod_name}. \
     mods will not be moved by default.",
     default=None,
 )
@@ -42,7 +42,7 @@ parser.add_argument(
     "-d",
     "--download-path",
     help="temporary directory to download mods to (defaults to ./steam)",
-    default="./steam",
+    default=".",
 )
 parser.add_argument(
     "--update",
