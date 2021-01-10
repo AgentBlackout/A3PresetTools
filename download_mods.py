@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(
     usage="%(prog)s [preset-collection] [options]",
     description="Download the mods in a preset or workshop collection using steamcmd.",
 )
-parser.add_argument("preset")
+parser.add_argument("preset-collection")
 parser.add_argument(
     "-s",
     "--steamcmd-path",
