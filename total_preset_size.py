@@ -33,6 +33,7 @@ for mod in preset.mods:
 
 sorted(sizes)
 
+total_size = 0
 for size in sizes:
     total_size += size
     print("'" + mod.name + "' is " + format_bytes(size))
