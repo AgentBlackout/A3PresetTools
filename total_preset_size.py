@@ -27,15 +27,16 @@ def format_bytes(num):
 preset = common.getPreset()
 preset.query_details()
 
-sizes = []
-for mod in preset.mods:
-    sizes.append(mod.get_size())
 
-sorted(sizes)
+def get_size(mod):
+    return mod.get_size()
+
 
 total_size = 0
-for size in sizes:
-    total_size += size
-    print("'" + mod.name + "' is " + format_bytes(size))
+sorted(preset.mods, key=get_size)
+for mod in preset.mods:
+    mod_size = mod.get_size()
+    total_size += mod_size
+    print("'" + mod.name + "' is " + format_bytes(mod_size))
 
 print("Preset contains " + format_bytes(total_size) + " of mods.")
