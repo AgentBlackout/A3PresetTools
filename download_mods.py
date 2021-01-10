@@ -1,4 +1,4 @@
-import preset_common as common
+import modset_common as common
 import subprocess
 import argparse
 import shutil
@@ -12,8 +12,8 @@ WORKSHOP_CONTENT_DIR = "steamapps/workshop/content/" + APPID
 
 parser = argparse.ArgumentParser(
     prog="compare_preset_deltas.py",
-    usage="%(prog)s [preset] [options]",
-    description="Download the mods in a preset using steamcmd.",
+    usage="%(prog)s [preset-collection] [options]",
+    description="Download the mods in a preset or workshop collection using steamcmd.",
 )
 parser.add_argument("preset")
 parser.add_argument(
@@ -52,14 +52,14 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-preset = common.getPreset(args.preset)
+modset = common.ModSet.from_collection_preset(args.preset_collection)
 
 if args.update:
     if not args.output_path is None:
         print("Moving existing mods to [download-path]... ", end="")
-        for mod in preset.mods:
+        for mod in modset.mods:
             if os.path.isdir(args.output_path + "/@" + mod.name):
-                # Move mods in the preset from [output-path] to steamcmds actual download path.
+                # Move mods in the modset from [output-path] to steamcmds actual download path.
                 shutil.move(
                     args.output_path + "/@" + mod.name,
                     args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
@@ -76,7 +76,7 @@ steamcmd_cmd = [
     "+force_install_dir",
     os.path.abspath(args.download_path),
 ]
-for mod in preset.mods:
+for mod in modset.mods:
     steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id])
 steamcmd_cmd.append("+quit")
 
@@ -92,7 +92,7 @@ if steamcmd.returncode != 0:
 
 if not args.output_path is None:
     print("Moving mods to [output-path]... ", end="")
-    for mod in preset.mods:
+    for mod in modset.mods:
         shutil.move(
             args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
             args.output_path + "/@" + mod.name,
@@ -111,6 +111,6 @@ def rename_files_lower(directory):
 
 if sys.platform == "linux" or sys.platform == "linux2":
     print("Renaming mod files to lower case (for linux compatibility)... ", end="")
-    for mod in preset.mods:
+    for mod in modset.mods:
         rename_files_lower(args.output_path + "/@" + mod.name)
     print("Done")

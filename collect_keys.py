@@ -1,14 +1,19 @@
-import preset_common as common
+import modset_common as common
 import argparse
 import shutil
 import glob
 
 parser = argparse.ArgumentParser(
     prog="compare_preset_deltas.py",
-    usage="%(prog)s {-l [load_order] OR -p [preset]} [options]",
-    description="Collect the .bikey files from the mods contained a preset or load order string.",
+    usage="%(prog)s {-l [load_order] OR -p [modset]} [options]",
+    description="Collect the .bikey files from the downloaded mods contained a preset or workshop collection or load order string.",
 )
-parser.add_argument("-p", "--preset", help="preset to select mods from", default=None)
+parser.add_argument(
+    "-m",
+    "--modset",
+    help="preset or workshop collection (id or url) to select mods from",
+    default=None,
+)
 parser.add_argument(
     "-l", "--load-order", help="load order to select mods from", default=None
 )
@@ -22,13 +27,13 @@ args = parser.parse_args()
 
 possible_mod_paths = []
 if not args.preset is None:
-    preset = common.getPreset(args.preset)
+    preset = common.ModSet.from_collection_preset(args.modset)
     possible_mod_paths = [["@" + mod.name, mod.id] for mod in preset.mods]
 elif not args.load_order is None:
     mod_folders = args.load_order.split(";")
     possible_mod_paths = [[(mod_folder) for mod_folder in mod_folders]]
 else:
-    raise Exception("You must specify either a -l/--load-order or -p/--preset.")
+    raise Exception("You must specify either a -l/--load-order or -m/--modset.")
 
 all_keys = []
 for possible_path in possible_mod_paths:
