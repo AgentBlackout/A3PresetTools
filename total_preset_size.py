@@ -4,10 +4,10 @@ import math
 
 parser = argparse.ArgumentParser(
     prog="total_preset_size.py",
-    usage="%(prog)s [preset-collection]",
+    usage="%(prog)s [modset]",
     description="Computes the combined size of all mods in a preset or workshop collection.",
 )
-parser.add_argument("preset-collection")
+parser.add_argument("modset")
 args = parser.parse_args()
 
 
@@ -24,18 +24,13 @@ def format_bytes(num):
         return str(num) + " bytes"
 
 
-modset = common.ModSet.from_collection_preset(args.preset_collection)
-modset.query_details()
-
-
-def get_size(mod):
-    return mod.get_size()
+modset = common.ModSet.from_collection_preset(args.modset)
 
 
 total_size = 0
-modset.mods = sorted(modset.mods, key=get_size)
+modset.mods = sorted(modset.mods, key=lambda mod: mod.size)
 for mod in modset.mods:
-    mod_size = mod.get_size()
+    mod_size = mod.size
     total_size += mod_size
     print("'" + mod.name + "' is " + format_bytes(mod_size))
 

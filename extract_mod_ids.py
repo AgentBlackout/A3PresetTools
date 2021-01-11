@@ -15,10 +15,10 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-modset = common.ModSet.from_preset(args.preset)
+preset = common.ModSet.from_preset(args.preset)
 
 modIds = ""
-for mod in modset.mods:
+for mod in preset.mods:
     modIds += str(mod.id) + "\n"
 
 outputPath = args.output

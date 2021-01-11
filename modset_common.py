@@ -39,11 +39,11 @@ class Mod:
 class ModSet:
     @staticmethod
     def from_collection(id):
-        ids = __get_collection_ids(id)
+        ids = ModSet.__get_collection_ids(id)
         ids.append(id)
-        details = __get_published_file_details(ids)
+        details = ModSet.__get_published_file_details(ids)
         title = details[-1]["title"]
-        mods = __get_mods(details[:-1])
+        mods = ModSet.__get_mods(details[:-1])
         return ModSet(title, mods)
 
     @staticmethod
@@ -51,11 +51,11 @@ class ModSet:
         if not os.path.isfile(path):
             raise Exception("Preset does not exist at '" + path + "'.")
 
-        soup = __get_preset_soup(path)
-        title = __get_preset_title(soup)
-        ids = __get_preset_ids(soup)
-        details = __get_published_file_details(ids)
-        mods = __get_mods(details)
+        soup = ModSet.__get_preset_soup(path)
+        title = ModSet.__get_preset_title(soup)
+        ids = ModSet.__get_preset_mod_ids(soup)
+        details = ModSet.__get_published_file_details(ids)
+        mods = ModSet.__get_mods(details)
         return ModSet(title, mods)
 
     @staticmethod
@@ -71,80 +71,66 @@ class ModSet:
         self.name = name
         self.mods = mods
 
+    @staticmethod
+    def __get_published_file_details(ids):
+        data = {"itemcount": str(len(ids))}
+        for i in range(len(ids)):
+            data.update({"publishedfileids[" + str(i) + "]": ids[i]})
+        response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
+        if response.status_code != 200:
+            raise Exception("Steam GetPublishedFileDetails API failed")
+        return response.json()["response"]["publishedfiledetails"]
 
-def __get_published_file_details(ids):
-    data = ["itemcount", str(len(ids))]
-    for i in range(len(ids)):
-        data.extend(["publishedfileids[" + str(i) + "]", ids[i]])
-    response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
-    if response.status_code != 200:
-        raise Exception("Steam GetPublishedFileDetails API failed")
-    return response.json()["response"]["publishedfiledetails"]
+    @staticmethod
+    def __get_mods(details):
+        mods = []
+        for item in details:
+            mods.append(Mod.from_api_details(item))
+        return mods
 
+    @staticmethod
+    def __get_collection_ids(id):
+        data = {"collectioncount": "1", "publishedfileids[0]": id}
+        response = requests.post(COLLECTION_DETAILS_ENDPOINT, data=data)
+        if response.status_code != 200:
+            raise Exception("Steam GetCollectionDetails API failed")
+        children = response.json()["response"]["collectiondetails"][0]["children"]
+        ids = []
+        for child in children:
+            ids.append(child["publishedfileid"])
+        return ids
 
-def __get_mods(details):
-    mods = []
-    for item in details:
-        mods.append(Mod.from_api_details(item))
-    return mods
+    @staticmethod
+    def __get_preset_soup(path):
+        if not os.path.exists(path):
+            print("Invalid path!")
+            raise Exception("Invalid preset path")
+        fileContent = ""
+        with open(path, "r") as f:
+            fileContent = "\n".join(f.readlines())
+        return BeautifulSoup(fileContent, "html.parser")
 
+    @staticmethod
+    def __get_preset_title(soup):
+        metas = soup.find_all("meta")
+        for meta in metas:
+            if meta["name"] == "arma:PresetName":
+                return meta["content"]
+        return "Invalid Preset"
 
-def __get_collection_ids(id):
-    data = ["itemcount", "1", "publishedfileids[0]", id]
-    response = requests.post(COLLECTION_DETAILS_ENDPOINT, data=data)
-    if response.status_code != 200:
-        raise Exception("Steam GetCollectionDetails API failed")
-    children = response.json()["response"]["collectiondetails"][0]["children"]
-    ids = []
-    for child in children:
-        ids.append(child["publishedfileid"])
-    return ids
+    @staticmethod
+    def __get_preset_mod_id(tr):
+        url = tr.a.text
+        id = url[len(STEAM_URL_FORMAT) :]
+        return id
 
-
-def __get_preset_soup(path):
-    if not os.path.exists(path):
-        print("Invalid path!")
-        raise Exception("Invalid preset path")
-    fileContent = ""
-    with open(path, "r") as f:
-        fileContent = "\n".join(f.readlines())
-    return BeautifulSoup(fileContent, "html.parser")
-
-
-def __get_preset_title(soup):
-    metas = soup.find_all("meta")
-    for meta in metas:
-        if meta["name"] == "arma:PresetName":
-            return meta["content"]
-    return "Invalid Preset"
-
-
-def __get_details(mods):
-    data = [("itemcount", len(mods))]
-    for i in range(len(mods)):
-        data.append(("publishedfileids[" + str(i) + "]", mods[i].id))
-
-    response = requests.post(PUBLISHED_FILE_DETAILS_ENDPOINT, data=data)
-    if response.status_code != 200:
-        raise Exception("Steam API query for mods failed.")
-    details = response.json()["response"]["publishedfiledetails"]
-
-    for i in range(len(mods)):
-        mods[i]._details = details[i]
-
-
-def __get_preset_id(tr):
-    url = tr.a.text
-    id = url[len(STEAM_URL_FORMAT) :]
-    return id
-
-
-def __get_preset_ids(soup):
-    modHtmls = soup.find_all("tr")
-    mods = []
-    for modHtml in modHtmls:
-        mods.append(__get_preset_id(modHtml))
-    return mods
+    @staticmethod
+    def __get_preset_mod_ids(soup):
+        modHtmls = soup.find_all("tr")
+        mods = []
+        for modHtml in modHtmls:
+            mods.append(ModSet.__get_preset_mod_id(modHtml))
+        return mods
 
 
 if __name__ == "__main__":

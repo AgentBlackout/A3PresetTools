@@ -5,15 +5,15 @@ import argparse
 
 parser = argparse.ArgumentParser(
     prog="compare_preset_deltas.py",
-    usage="%(prog)s [preset-collection1] [preset-collection2]",
+    usage="%(prog)s [modset1] [modset2]",
     description="Compared two arma preset files or workshop collections.",
 )
-parser.add_argument("preset-collection1")
-parser.add_argument("preset-collection2")
+parser.add_argument("modset1")
+parser.add_argument("modset2")
 args = parser.parse_args()
 
-modset1 = common.ModSet.from_collection_preset(args.preset_collection1)
-modset2 = common.ModSet.from_collection_preset(args.preset_collection2)
+modset1 = common.ModSet.from_collection_preset(args.modset1)
+modset2 = common.ModSet.from_collection_preset(args.modset2)
 
 commonMods = []
 for mod in modset1.mods:
@@ -34,12 +34,10 @@ print("Common Mods:")
 for mod in commonMods:
     print(" - " + str(mod))
 
-_, tail = os.path.split(args.preset1)
-print(tail + " Mods:")
+print(modset1.name + " Mods:")
 for mod in modset1Only:
     print(" - " + str(mod))
 
-_, tail = os.path.split(args.preset2)
-print(tail + " Mods:")
+print(modset2.name + " Mods:")
 for mod in modset2Only:
     print(" - " + str(mod))
