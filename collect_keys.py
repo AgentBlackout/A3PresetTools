@@ -26,9 +26,9 @@ parser.add_argument(
 args = parser.parse_args()
 
 possible_mod_paths = []
-if not args.preset is None:
-    preset = common.ModSet.from_collection_preset(args.modset)
-    possible_mod_paths = [["@" + mod.name, mod.id] for mod in preset.mods]
+if not args.modset is None:
+    modset = common.ModSet.from_collection_preset(args.modset)
+    possible_mod_paths = [["@" + mod.name, mod.id] for mod in modset.mods]
 elif not args.load_order is None:
     mod_folders = args.load_order.split(";")
     possible_mod_paths = [[(mod_folder) for mod_folder in mod_folders]]
