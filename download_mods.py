@@ -11,7 +11,7 @@ APPID = "107410"
 WORKSHOP_CONTENT_DIR = "steamapps/workshop/content/" + APPID
 
 parser = argparse.ArgumentParser(
-    prog="compare_preset_deltas.py",
+    prog="download_mods.py",
     usage="%(prog)s [preset-collection] [options]",
     description="Download the mods in a preset or workshop collection using steamcmd.",
 )

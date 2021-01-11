@@ -43,3 +43,11 @@ Determines the individual size and total size of all mods in a preset or steam c
 ```
 py ./total_modset_size.py <path-to-preset-or-collection-id>
 ```
+
+## `collect_keys.py`
+
+Moves the .bikey files in the downloaded mods contained in a preset or workshop collection to a single folder (for use with server/keys).
+
+```
+py ./collect_keys.py <path-to-preset-or-collection-id>
+```

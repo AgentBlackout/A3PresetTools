@@ -3,7 +3,7 @@ import argparse
 import math
 
 parser = argparse.ArgumentParser(
-    prog="total_preset_size.py",
+    prog="total_modset_size.py",
     usage="%(prog)s [modset]",
     description="Computes the combined size of all mods in a preset or workshop collection.",
 )

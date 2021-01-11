@@ -4,7 +4,7 @@ import shutil
 import glob
 
 parser = argparse.ArgumentParser(
-    prog="compare_preset_deltas.py",
+    prog="collect_keys.py",
     usage="%(prog)s {-l [load_order] OR -p [modset]} [options]",
     description="Collect the .bikey files from the downloaded mods contained a preset or workshop collection or load order string.",
 )

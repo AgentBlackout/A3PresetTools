@@ -4,7 +4,7 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser(
-    prog="compare_preset_deltas.py",
+    prog="compare_modset_deltas.py",
     usage="%(prog)s [modset1] [modset2]",
     description="Compared two arma preset files or workshop collections.",
 )
