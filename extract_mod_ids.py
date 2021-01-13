@@ -1,4 +1,4 @@
-import preset_common as common
+import modset_common as common
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -15,7 +15,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-preset = common.getPreset(args.preset)
+preset = common.ModSet.from_preset(args.preset)
 
 modIds = ""
 for mod in preset.mods:

@@ -1,13 +1,13 @@
-import preset_common as common
+import modset_common as common
 import argparse
 import math
 
 parser = argparse.ArgumentParser(
-    prog="total_preset_size.py",
-    usage="%(prog)s [preset]",
-    description="Computes the combined size of all mods in a preset.",
+    prog="total_modset_size.py",
+    usage="%(prog)s [modset]",
+    description="Computes the combined size of all mods in a preset or workshop collection.",
 )
-parser.add_argument("preset")
+parser.add_argument("modset")
 args = parser.parse_args()
 
 
@@ -24,12 +24,13 @@ def format_bytes(num):
         return str(num) + " bytes"
 
 
-preset = common.getPreset()
-preset.query_details()
+modset = common.ModSet.from_collection_preset(args.modset)
+
 
 total_size = 0
-for mod in preset.mods:
-    mod_size = mod.get_size()
+modset.mods = sorted(modset.mods, key=lambda mod: mod.size)
+for mod in modset.mods:
+    mod_size = mod.size
     total_size += mod_size
     print("'" + mod.name + "' is " + format_bytes(mod_size))
 

@@ -1,7 +1,9 @@
-import preset_common as common
+import modset_common as common
 import subprocess
 import argparse
 import shutil
+import glob
+import sys
 import os
 
 APPID = "107410"
@@ -9,11 +11,11 @@ APPID = "107410"
 WORKSHOP_CONTENT_DIR = "steamapps/workshop/content/" + APPID
 
 parser = argparse.ArgumentParser(
-    prog="compare_preset_deltas.py",
-    usage="%(prog)s [preset] [options]",
-    description="Download the mods in a preset using steamcmd.",
+    prog="download_mods.py",
+    usage="%(prog)s [preset-collection] [options]",
+    description="Download the mods in a preset or workshop collection using steamcmd.",
 )
-parser.add_argument("preset")
+parser.add_argument("preset_collection")
 parser.add_argument(
     "-s",
     "--steamcmd-path",
@@ -32,7 +34,7 @@ parser.add_argument(
 parser.add_argument(
     "-o",
     "--output-path",
-    help="directory to move downloaded mods to. if this is set mods will be renamed to @\{mod_name\}. \
+    help=r"directory to move downloaded mods to. if this is set mods will be renamed to @{mod_name}. \
     mods will not be moved by default.",
     default=None,
 )
@@ -40,7 +42,7 @@ parser.add_argument(
     "-d",
     "--download-path",
     help="temporary directory to download mods to (defaults to ./steam)",
-    default="./steam",
+    default=".",
 )
 parser.add_argument(
     "--update",
@@ -50,14 +52,14 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-preset = common.getPreset(args.preset)
+modset = common.ModSet.from_collection_preset(args.preset_collection)
 
 if args.update:
     if not args.output_path is None:
         print("Moving existing mods to [download-path]... ", end="")
-        for mod in preset.mods:
+        for mod in modset.mods:
             if os.path.isdir(args.output_path + "/@" + mod.name):
-                # Move mods in the preset from [output-path] to steamcmds actual download path.
+                # Move mods in the modset from [output-path] to steamcmds actual download path.
                 shutil.move(
                     args.output_path + "/@" + mod.name,
                     args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
@@ -74,7 +76,7 @@ steamcmd_cmd = [
     "+force_install_dir",
     os.path.abspath(args.download_path),
 ]
-for mod in preset.mods:
+for mod in modset.mods:
     steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id])
 steamcmd_cmd.append("+quit")
 
@@ -90,9 +92,25 @@ if steamcmd.returncode != 0:
 
 if not args.output_path is None:
     print("Moving mods to [output-path]... ", end="")
-    for mod in preset.mods:
+    for mod in modset.mods:
         shutil.move(
             args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
             args.output_path + "/@" + mod.name,
         )
+    print("Done")
+
+
+def rename_files_lower(directory):
+    for mod_file in glob.glob(glob.escape(directory) + "/*"):
+        mod_file_name = os.path.split(mod_file)[1]
+        shutil.move(mod_file, directory + "/" + mod_file_name.lower())
+
+        if os.path.isdir(mod_file):
+            rename_files_lower(directory + "/" + mod_file_name.lower())
+
+
+if sys.platform == "linux" or sys.platform == "linux2":
+    print("Renaming mod files to lower case (for linux compatibility)... ", end="")
+    for mod in modset.mods:
+        rename_files_lower(args.output_path + "/@" + mod.name)
     print("Done")
