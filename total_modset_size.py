@@ -19,7 +19,7 @@ def format_bytes(num):
     if order > 6:
         return str(round(num / 10 ** 6, 2)) + " mb"
     if order > 3:
-        return str(round(num / 10 ** 3, 2)) + " mb"
+        return str(round(num / 10 ** 3, 2)) + " kb"
     else:
         return str(num) + " bytes"
 
