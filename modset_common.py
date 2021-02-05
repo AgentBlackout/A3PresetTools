@@ -55,7 +55,17 @@ class ModSet:
         title = ModSet.__get_preset_title(soup)
         ids = ModSet.__get_preset_mod_ids(soup)
         details = ModSet.__get_published_file_details(ids)
-        mods = ModSet.__get_mods(details)
+        mods = []
+        for modDetails in details:
+            if not "title" in modDetails:
+                # Mod title is unavailable (eg mod is unlisted) so fallback to the name in the preset.
+                details.remove(modDetails)
+                name = ModSet.__find_preset_mod_name(
+                    modDetails["publishedfileid"], soup
+                )
+                mods.append(Mod(name, modDetails["publishedfileid"], float("nan")))
+
+        mods.extend(ModSet.__get_mods(details))
         return ModSet(title, mods)
 
     @staticmethod
@@ -117,6 +127,19 @@ class ModSet:
             if meta["name"] == "arma:PresetName":
                 return meta["content"]
         return "Invalid Preset"
+
+    @staticmethod
+    def __get_preset_mod_name(tr):
+        return tr.td.text
+
+    @staticmethod
+    def __find_preset_mod_name(id, soup):
+        modHtmls = soup.find_all("tr")
+        for modHtml in modHtmls:
+            if ModSet.__get_preset_mod_id(modHtml) == id:
+                return ModSet.__get_preset_mod_name(modHtml)
+
+        raise Exception("Could not find mod with id '" + id + "' in the preset.")
 
     @staticmethod
     def __get_preset_mod_id(tr):
