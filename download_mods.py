@@ -77,7 +77,7 @@ steamcmd_cmd = [
     os.path.abspath(args.download_path),
 ]
 for mod in modset.mods:
-    steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id])
+    steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id, "validate"])
 steamcmd_cmd.append("+quit")
 
 print("Running steamcmd...")
