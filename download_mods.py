@@ -76,7 +76,13 @@ if args.update:
 if args.clean:
     if not args.output_path is None:
         for mod_folder in glob.glob(args.output_path + "/@*"):
-            if not mod_folder.split("/@")[1] in [m.name for m in modset.mods]:
+            mod_name = mod_folder.split("/@")[1]
+            if not mod_name in [m.name for m in modset.mods]:
+                print(
+                    "Deleting @"
+                    + mod_name
+                    + " because clean mode is enabled an this mod it not the in specified modset."
+                )
                 shutil.rmtree(mod_folder)
     else:
         raise Exception("You must set -o/--output-path to enable --clean mode.")
