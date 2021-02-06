@@ -41,8 +41,14 @@ parser.add_argument(
 parser.add_argument(
     "-d",
     "--download-path",
-    help="temporary directory to download mods to (defaults to ./steam)",
+    help="directory to place steamapps folder in for downloading mods (defaults to .)",
     default=".",
+)
+parser.add_argument(
+    "-l",
+    "--symlink",
+    help="instead of copying mods from [download-path] to [output-path] mods will be symlinked (caution arma doesnt seem to follow symlinks)",
+    action="store_true",
 )
 parser.add_argument(
     "--update",
@@ -59,33 +65,35 @@ args = parser.parse_args()
 
 modset = common.ModSet.from_collection_preset(args.modset)
 
-if args.update:
-    if not args.output_path is None:
-        print("Moving existing mods to [download-path]... ", end="")
-        for mod in modset.mods:
-            if os.path.isdir(args.output_path + "/@" + mod.name):
-                # Move mods in the modset from [output-path] to steamcmds actual download path.
-                shutil.move(
-                    args.output_path + "/@" + mod.name,
-                    args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
-                )
-        print("Done")
-    else:
+if args.update and not args.symlink:
+    # No need to copy mods if they are symlinked.
+    if args.output_path is None:
         raise Exception("You must set -o/--output-path to enable --update mode.")
 
+    print("Moving existing mods to [download-path]... ", end="")
+    for mod in modset.mods:
+        if os.path.isdir(args.output_path + "/@" + mod.name):
+            # Move mods in the modset from [output-path] to steamcmds actual download path.
+            shutil.move(
+                args.output_path + "/@" + mod.name,
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+            )
+    print("Done")
+
+
 if args.clean:
-    if not args.output_path is None:
-        for mod_folder in glob.glob(args.output_path + "/@*"):
-            mod_name = mod_folder.split("/@")[1]
-            if not mod_name in [m.name for m in modset.mods]:
-                print(
-                    "Deleting @"
-                    + mod_name
-                    + " because clean mode is enabled an this mod it not the in specified modset."
-                )
-                shutil.rmtree(mod_folder)
-    else:
+    if args.output_path is None:
         raise Exception("You must set -o/--output-path to enable --clean mode.")
+
+    for mod_folder in glob.glob(args.output_path + "/@*"):
+        mod_name = mod_folder.split("/@")[1]
+        if not mod_name in [m.name for m in modset.mods]:
+            print(
+                "Deleting @"
+                + mod_name
+                + " because clean mode is enabled an this mod it not the in specified modset."
+            )
+            shutil.rmtree(mod_folder)
 
 
 steamcmd_cmd = [
@@ -104,19 +112,30 @@ print("Running steamcmd...")
 steamcmd = subprocess.run(steamcmd_cmd)
 print("steamcmd done.")
 
-# Apparently 'not var is None' is fine but 'not var is 0' is worthy of a syntax warning.
 if steamcmd.returncode != 0:
     raise Exception(
         "steamcmd failed for some reason. Please review its output and try again."
     )
 
 if not args.output_path is None:
-    print("Moving mods to [output-path]... ", end="")
-    for mod in modset.mods:
-        shutil.move(
-            args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
-            args.output_path + "/@" + mod.name,
-        )
+    if args.symlink:
+        print("Symlinking mods to [output-path]...", end="")
+
+        for mod in modset.mods:
+            os.symlink(
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+                args.output_path + "/@" + mod.name,
+                True,
+            )
+    else:
+        print("Moving mods to [output-path]... ", end="")
+
+        for mod in modset.mods:
+            shutil.move(
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+                args.output_path + "/@" + mod.name,
+            )
+
     print("Done")
 
 
@@ -130,6 +149,7 @@ def rename_files_lower(directory):
 
 
 if sys.platform == "linux" or sys.platform == "linux2":
+    # PBOs are loaded with lower case names which breaks in case sensitive filesystems.
     print("Renaming mod files to lower case (for linux compatibility)... ", end="")
     for mod in modset.mods:
         rename_files_lower(args.output_path + "/@" + mod.name)
