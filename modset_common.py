@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import requests
 from bs4 import BeautifulSoup
@@ -18,10 +19,8 @@ class Mod:
         return Mod(details["title"], details["publishedfileid"], details["file_size"])
 
     def __init__(self, name, id, size):
-        if sys.platform == "linux" or sys.platform == "linux2":
-            self.name = name.replace(" ", "_")
-        else:
-            self.name = name
+        name = name.replace(" ", "_")
+        self.name = re.sub(r"[\\\/:*?\"<>|]", " ", name)
         self.id = id
         self.size = size
 
