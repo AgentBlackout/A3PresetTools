@@ -20,7 +20,7 @@ class Mod:
 
     def __init__(self, name, id, size):
         name = name.replace(" ", "_")
-        self.name = re.sub(r"[\\\/:*?\"<>|]", " ", name)
+        self.name = re.sub(r"[\\\/:*?\"<>|]", "", name)
         self.id = id
         self.size = size
 
