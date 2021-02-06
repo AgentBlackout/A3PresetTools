@@ -12,10 +12,10 @@ WORKSHOP_CONTENT_DIR = "steamapps/workshop/content/" + APPID
 
 parser = argparse.ArgumentParser(
     prog="download_mods.py",
-    usage="%(prog)s [preset-collection] [options]",
+    usage="%(prog)s [modset] [options]",
     description="Download the mods in a preset or workshop collection using steamcmd.",
 )
-parser.add_argument("preset_collection")
+parser.add_argument("modset")
 parser.add_argument(
     "-s",
     "--steamcmd-path",
@@ -35,7 +35,7 @@ parser.add_argument(
     "-o",
     "--output-path",
     help=r"directory to move downloaded mods to. if this is set mods will be renamed to @{mod_name}. \
-    mods will not be moved by default.",
+    mods will not be moved by default",
     default=None,
 )
 parser.add_argument(
@@ -50,9 +50,14 @@ parser.add_argument(
     re-downloaded",
     action="store_true",
 )
+parser.add_argument(
+    "--clean",
+    help="any folders prefixed with @ in [output-path] not in the current modset will be deleted",
+    action="store_true",
+)
 args = parser.parse_args()
 
-modset = common.ModSet.from_collection_preset(args.preset_collection)
+modset = common.ModSet.from_collection_preset(args.modset)
 
 if args.update:
     if not args.output_path is None:
@@ -67,6 +72,15 @@ if args.update:
         print("Done")
     else:
         raise Exception("You must set -o/--output-path to enable --update mode.")
+
+if args.clean:
+    if not args.output_path is None:
+        for mod_folder in glob.glob(args.output_path + "/@*"):
+            if not mod_folder.split("/@")[1] in [m.name for m in modset.mods]:
+                shutil.rmtree(mod_folder)
+    else:
+        raise Exception("You must set -o/--output-path to enable --clean mode.")
+
 
 steamcmd_cmd = [
     args.steamcmd_path,
