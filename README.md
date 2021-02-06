@@ -1,4 +1,4 @@
-# Preset ingest scripts
+# Arma 3 Preset Ingest Scripts
 
 Just a few small scripts to ease dealing with arma presets and workshop collections.
 
