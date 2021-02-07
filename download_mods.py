@@ -65,6 +65,9 @@ args = parser.parse_args()
 
 modset = common.ModSet.from_collection_preset(args.modset)
 
+if args.symlink and args.output_path is None:
+    raise Exception("You must specify -o/--output-path to enable --symlink mode.")
+
 if args.update and not args.symlink:
     # No need to copy mods if they are symlinked.
     if args.output_path is None:
