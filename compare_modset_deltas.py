@@ -34,10 +34,20 @@ print("Common Mods:")
 for mod in commonMods:
     print(" - " + str(mod))
 
-print(modset1.name + " Mods:")
+if modset1.is_collection():
+    print(modset1.name + " Mods (" + modset1.get_url() + "):")
+else:
+    print(modset1.name + " Mods:")
+if len(modset1.mods) == 0:
+    print("None")
 for mod in modset1Only:
     print(" - " + str(mod))
 
-print(modset2.name + " Mods:")
+if modset2.is_collection():
+    print(modset2.name + " Mods (" + modset2.get_url() + "):")
+else:
+    print(modset2.name + " Mods:")
+if len(modset2.mods) == 0:
+    print("None")
 for mod in modset2Only:
     print(" - " + str(mod))
