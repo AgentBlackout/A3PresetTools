@@ -16,11 +16,19 @@ COLLECTION_DETAILS_ENDPOINT = (
 class Mod:
     @staticmethod
     def from_api_details(details):
-        return Mod(details["title"], details["publishedfileid"], details["file_size"])
+        return Mod(
+            details["title"] if "title" in details else None,
+            details["publishedfileid"],
+            details["file_size"] if "file_size" in details else None,
+        )
 
     def __init__(self, name, id, size):
-        name = name.replace(" ", "_")
-        self.name = re.sub(r"[\\\/:*?\"<>|]", "", name)
+        if name is None:
+            self.name = id
+        else:
+            name = name.replace(" ", "_")
+            self.name = re.sub(r"[\\\/:*?\"<>|]", "", name)
+
         self.id = id
         self.size = size
 
@@ -43,7 +51,7 @@ class ModSet:
         details = ModSet.__get_published_file_details(ids)
         title = details[-1]["title"]
         mods = ModSet.__get_mods(details[:-1])
-        return ModSet(title, mods)
+        return ModSet(title, mods, id)
 
     @staticmethod
     def from_preset(path):
@@ -54,31 +62,37 @@ class ModSet:
         title = ModSet.__get_preset_title(soup)
         ids = ModSet.__get_preset_mod_ids(soup)
         details = ModSet.__get_published_file_details(ids)
-        mods = []
-        for modDetails in details:
-            if not "title" in modDetails:
-                # Mod title is unavailable (eg mod is unlisted) so fallback to the name in the preset.
-                details.remove(modDetails)
-                name = ModSet.__find_preset_mod_name(
-                    modDetails["publishedfileid"], soup
-                )
-                mods.append(Mod(name, modDetails["publishedfileid"], float("nan")))
+        mods = ModSet.__get_mods(details)
 
-        mods.extend(ModSet.__get_mods(details))
+        for mod in mods:
+            # Mod title is unavailable (eg mod is unlisted) so fallback to the name in the preset.
+            if mod.name is None:
+                mod.name = ModSet.__find_preset_mod_name(mod.id, soup)
+
         return ModSet(title, mods)
 
     @staticmethod
     def from_collection_preset(input):
         if input.isnumeric():
             return ModSet.from_collection(input)
-        elif "steamcommunity.com/sharedfiles/filedetails/?id=" in input:
+        elif "id=" in input:
             return ModSet.from_collection(input.split("id=")[1])
         else:
             return ModSet.from_preset(input)
 
-    def __init__(self, name, mods):
+    def __init__(self, name, mods, id=None):
         self.name = name
         self.mods = mods
+        self.id = id
+
+    def is_preset(self):
+        return self.id is None
+
+    def is_collection(self):
+        return not self.id is None
+
+    def get_url(self):
+        return (STEAM_URL_FORMAT + self.id) if self.is_collection() else None
 
     @staticmethod
     def __get_published_file_details(ids):

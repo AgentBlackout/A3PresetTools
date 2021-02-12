@@ -28,10 +28,21 @@ modset = common.ModSet.from_collection_preset(args.modset)
 
 
 total_size = 0
-modset.mods = sorted(modset.mods, key=lambda mod: mod.size)
+unknown_size = False
+modset.mods = sorted(modset.mods, key=lambda mod: -1 if mod.size is None else mod.size)
 for mod in modset.mods:
-    mod_size = mod.size
-    total_size += mod_size
-    print("'" + mod.name + "' is " + format_bytes(mod_size))
+    if not mod.size is None:
+        total_size += mod.size
+        print(str(mod) + " is " + format_bytes(mod.size))
+    else:
+        print(str(mod) + " size is unknown")
+        unknown_size = True
 
-print("Preset contains " + format_bytes(total_size) + " of mods.")
+if unknown_size:
+    print(
+        "Preset contains at least "
+        + format_bytes(total_size)
+        + " of mods (some mods were unlisted or private)."
+    )
+else:
+    print("Preset contains " + format_bytes(total_size) + " of mods.")
