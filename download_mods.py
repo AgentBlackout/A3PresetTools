@@ -12,10 +12,10 @@ WORKSHOP_CONTENT_DIR = "steamapps/workshop/content/" + APPID
 
 parser = argparse.ArgumentParser(
     prog="download_mods.py",
-    usage="%(prog)s [preset-collection] [options]",
+    usage="%(prog)s [modset] [options]",
     description="Download the mods in a preset or workshop collection using steamcmd.",
 )
-parser.add_argument("preset_collection")
+parser.add_argument("modset")
 parser.add_argument(
     "-s",
     "--steamcmd-path",
@@ -35,14 +35,20 @@ parser.add_argument(
     "-o",
     "--output-path",
     help=r"directory to move downloaded mods to. if this is set mods will be renamed to @{mod_name}. \
-    mods will not be moved by default.",
+    mods will not be moved by default",
     default=None,
 )
 parser.add_argument(
     "-d",
     "--download-path",
-    help="temporary directory to download mods to (defaults to ./steam)",
+    help="directory to place steamapps folder in for downloading mods (defaults to .)",
     default=".",
+)
+parser.add_argument(
+    "-l",
+    "--symlink",
+    help="instead of copying mods from [download-path] to [output-path] mods will be symlinked (caution arma doesnt seem to follow symlinks)",
+    action="store_true",
 )
 parser.add_argument(
     "--update",
@@ -50,23 +56,48 @@ parser.add_argument(
     re-downloaded",
     action="store_true",
 )
+parser.add_argument(
+    "--clean",
+    help="any folders prefixed with @ in [output-path] not in the current modset will be deleted",
+    action="store_true",
+)
 args = parser.parse_args()
 
-modset = common.ModSet.from_collection_preset(args.preset_collection)
+modset = common.ModSet.from_collection_preset(args.modset)
 
-if args.update:
-    if not args.output_path is None:
-        print("Moving existing mods to [download-path]... ", end="")
-        for mod in modset.mods:
-            if os.path.isdir(args.output_path + "/@" + mod.name):
-                # Move mods in the modset from [output-path] to steamcmds actual download path.
-                shutil.move(
-                    args.output_path + "/@" + mod.name,
-                    args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
-                )
-        print("Done")
-    else:
+if args.symlink and args.output_path is None:
+    raise Exception("You must specify -o/--output-path to enable --symlink mode.")
+
+if args.update and not args.symlink:
+    # No need to copy mods if they are symlinked.
+    if args.output_path is None:
         raise Exception("You must set -o/--output-path to enable --update mode.")
+
+    print("Moving existing mods to [download-path]... ", end="")
+    for mod in modset.mods:
+        if os.path.isdir(args.output_path + "/@" + mod.name):
+            # Move mods in the modset from [output-path] to steamcmds actual download path.
+            shutil.move(
+                args.output_path + "/@" + mod.name,
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+            )
+    print("Done")
+
+
+if args.clean:
+    if args.output_path is None:
+        raise Exception("You must set -o/--output-path to enable --clean mode.")
+
+    for mod_folder in glob.glob(args.output_path + "/@*"):
+        mod_name = mod_folder.split("/@")[1]
+        if not mod_name in [m.name for m in modset.mods]:
+            print(
+                "Deleting @"
+                + mod_name
+                + " because clean mode is enabled an this mod it not the in specified modset."
+            )
+            shutil.rmtree(mod_folder)
+
 
 steamcmd_cmd = [
     args.steamcmd_path,
@@ -77,26 +108,37 @@ steamcmd_cmd = [
     os.path.abspath(args.download_path),
 ]
 for mod in modset.mods:
-    steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id])
+    steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id, "validate"])
 steamcmd_cmd.append("+quit")
 
 print("Running steamcmd...")
 steamcmd = subprocess.run(steamcmd_cmd)
 print("steamcmd done.")
 
-# Apparently 'not var is None' is fine but 'not var is 0' is worthy of a syntax warning.
 if steamcmd.returncode != 0:
     raise Exception(
         "steamcmd failed for some reason. Please review its output and try again."
     )
 
 if not args.output_path is None:
-    print("Moving mods to [output-path]... ", end="")
-    for mod in modset.mods:
-        shutil.move(
-            args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
-            args.output_path + "/@" + mod.name,
-        )
+    if args.symlink:
+        print("Symlinking mods to [output-path]...", end="")
+
+        for mod in modset.mods:
+            os.symlink(
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+                args.output_path + "/@" + mod.name,
+                True,
+            )
+    else:
+        print("Moving mods to [output-path]... ", end="")
+
+        for mod in modset.mods:
+            shutil.move(
+                args.download_path + "/" + WORKSHOP_CONTENT_DIR + "/" + mod.id,
+                args.output_path + "/@" + mod.name,
+            )
+
     print("Done")
 
 
@@ -110,6 +152,7 @@ def rename_files_lower(directory):
 
 
 if sys.platform == "linux" or sys.platform == "linux2":
+    # PBOs are loaded with lower case names which breaks in case sensitive filesystems.
     print("Renaming mod files to lower case (for linux compatibility)... ", end="")
     for mod in modset.mods:
         rename_files_lower(args.output_path + "/@" + mod.name)
