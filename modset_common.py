@@ -68,7 +68,7 @@ class ModSet:
             # Mod title is unavailable (eg mod is unlisted) so fallback to the name in the preset.
             if mod.name is None:
                 mod.name = ModSet.__find_preset_mod_name(mod.id, soup)
-
+                
         return ModSet(title, mods)
 
     @staticmethod
