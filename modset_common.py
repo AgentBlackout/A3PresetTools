@@ -1,16 +1,10 @@
 import os
 import re
+import io
 import sys
 import requests
+from modset_constants import *
 from bs4 import BeautifulSoup
-
-STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
-PUBLISHED_FILE_DETAILS_ENDPOINT = (
-    "https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/"
-)
-COLLECTION_DETAILS_ENDPOINT = (
-    "https://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v1/"
-)
 
 
 class Mod:
@@ -40,7 +34,10 @@ class Mod:
         return True
 
     def __repr__(self):
-        return self.name + " (" + STEAM_URL_FORMAT + self.id + ")"
+        return self.name + " (" + self.get_url() + ")"
+
+    def get_url(self):
+        return STEAM_URL_FORMAT + self.id
 
 
 class ModSet:
@@ -68,7 +65,7 @@ class ModSet:
             # Mod title is unavailable (eg mod is unlisted) so fallback to the name in the preset.
             if mod.name is None:
                 mod.name = ModSet.__find_preset_mod_name(mod.id, soup)
-                
+
         return ModSet(title, mods)
 
     @staticmethod
@@ -93,6 +90,17 @@ class ModSet:
 
     def get_url(self):
         return (STEAM_URL_FORMAT + self.id) if self.is_collection() else None
+
+    def export_preset(self, outfile):
+        mod_list = ""
+        for mod in self.mods:
+            mod_list += STEAM_MOD_FORMAT.format(
+                mod_name=mod.name, mod_url=mod.get_url()
+            )
+        preset = PRESET_FORMAT.format(preset_name=self.name, mod_list=mod_list)
+        out = open(outfile, "wt")
+        out.write(preset)
+        out.close()
 
     @staticmethod
     def __get_published_file_details(ids):
