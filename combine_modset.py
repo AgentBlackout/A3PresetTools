@@ -29,6 +29,9 @@ for addition in args.add:
         if not mod in mods:
             mods.append(mod)
 
+if len(mods) == 0:
+    raise Exception("No mods specified to add. Use the -a argument to add modsets.")
+
 for subtraction in args.subtract:
     modset = common.ModSet.from_collection_preset(subtraction)
     for mod in modset.mods:
