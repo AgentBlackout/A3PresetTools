@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import modset_common as common
 import argparse

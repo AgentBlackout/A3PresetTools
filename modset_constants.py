@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
 
 PUBLISHED_FILE_DETAILS_ENDPOINT = (
@@ -115,3 +117,6 @@ a:hover {{
     </div>
 </body>
 </html>"""
+
+if __name__ == "__main__":
+    print("Don't run this, this is a common library!")
