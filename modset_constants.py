@@ -26,7 +26,7 @@ PRESET_FORMAT = """
 <html>
     <head>
         <meta name="arma:Type" content="preset" />
-        <meta name="arma:PresetName" content="Black Sword Biceps" />
+        <meta name="arma:PresetName" content="{preset_name}" />
         <meta name="generator" content="A3PresetTools - https://github.com/AgentBlackout/A3PresetTools" />
         <title>Arma 3</title>
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css" />
