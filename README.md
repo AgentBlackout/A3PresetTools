@@ -51,3 +51,11 @@ Moves the .bikey files in the downloaded mods contained in a preset or workshop 
 ```
 py ./collect_keys.py <path-to-preset-or-collection-id>
 ```
+
+## `combine_modset.py`
+
+Adds and subtracts modsets to produce an output preset.
+
+```
+py ./combine_modset.py <output> --add <list-of-paths-to-presets-or-collection-ids> --subtract <list-of-paths-to-presets-or-collection-ids>
+```
