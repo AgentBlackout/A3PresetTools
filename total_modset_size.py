@@ -31,11 +31,13 @@ modset = common.ModSet.from_collection_preset(args.modset)
 
 total_size = 0
 unknown_size = False
-modset.mods = sorted(modset.mods, key=lambda mod: -1 if mod.size is None else mod.size)
+modset.mods = sorted(
+    modset.mods, key=lambda mod: -1 if mod.size is None else mod.size, reverse=True
+)
 for mod in modset.mods:
     if not mod.size is None:
         total_size += mod.size
-        print(str(mod) + " is " + format_bytes(mod.size))
+        print(format_bytes(mod.size) + " — " + str(mod))
     else:
         print(str(mod) + " size is unknown")
         unknown_size = True
