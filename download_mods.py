@@ -27,11 +27,11 @@ parser.add_argument(
 parser.add_argument(
     "-u",
     "--username",
-    help="username to login to steam with (account must own arma 3)",
+    help="username to login to steam with (account must own Arma3)",
     required=True,
 )
 parser.add_argument(
-    "-p", "--password", help="password to login to steam with", required=True
+    "-p", "--password", help="password to login to steam with", default=None
 )
 parser.add_argument(
     "-o",
@@ -43,7 +43,7 @@ parser.add_argument(
 parser.add_argument(
     "-d",
     "--download-path",
-    help="directory to place steamapps folder in for downloading mods (defaults to .)",
+    help="directory to temporarily place steamapps folder in for downloading mods (defaults to .)",
     default=".",
 )
 parser.add_argument(
@@ -96,19 +96,20 @@ if args.clean:
             print(
                 "Deleting @"
                 + mod_name
-                + " because clean mode is enabled an this mod it not the in specified modset."
+                + " because clean mode is enabled and this mod it not the in specified modset."
             )
             shutil.rmtree(mod_folder)
 
 
 steamcmd_cmd = [
     args.steamcmd_path,
-    "+login",
-    args.username,
-    args.password,
     "+force_install_dir",
     os.path.abspath(args.download_path),
+    "+login",
+    args.username,
 ]
+if not args.password is None:
+    steamcmd_cmd.extend([args.password])
 for mod in modset.mods:
     steamcmd_cmd.extend(["+workshop_download_item", APPID, mod.id, "validate"])
 steamcmd_cmd.append("+quit")
