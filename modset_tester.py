@@ -24,6 +24,11 @@ parser.add_argument(
     help="directory containing all mods in the preset - you should run download_mods.py before this script",
     default=".",
 )
+parser.add_argument(
+    "--debug",
+    help="if set server output will be displayed via stdout",
+    action="store_true",
+)
 args, unknown = parser.parse_known_args()
 
 if len(unknown) > 0:
@@ -89,6 +94,9 @@ def test_mods(mods):
 
     read_mission = False
     for line in server.stdout:
+        if args.debug:
+            print(line, end="")
+
         # Server should only read the mission once.
         if "Reading mission" in line:
             if read_mission:
@@ -124,4 +132,6 @@ for mod in modset.mods:
         failed_mods.append(mod)
 
 print("The following mods failed testing:")
-print(failed_mods)
+for mod in failed_mods:
+    print(mod, end=" ")
+print("")
