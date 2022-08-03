@@ -4,7 +4,8 @@ import os
 import argparse
 import subprocess
 import threading
-from time import sleep
+import signal
+import time
 import modset_common as common
 
 parser = argparse.ArgumentParser(
@@ -28,6 +29,12 @@ parser.add_argument(
     "--debug",
     help="if set server output will be displayed via stdout",
     action="store_true",
+)
+parser.add_argument(
+    "--timeout",
+    help="maximum time in seconds to allow for a mod to start",
+    default=60,
+    type=int,
 )
 args, unknown = parser.parse_known_args()
 
@@ -77,20 +84,36 @@ for arg in unknown:
         unknown.remove(arg)
 
 
-def test_mods(mods):
+def test_mods(mods, max_duration):
     cmd = server_cmd.copy()
     load_order = get_mod_arg(mods)
     if not load_order is None:
         cmd.append(load_order)
 
     # Print the command as a single string.
-    for arg in cmd:
-        print(arg, end=" ")
-    print("")
+    if args.debug:
+        print("")
+        for arg in cmd:
+            print(arg, end=" ")
+        print("")
 
+    start_time = time.time()
     server = subprocess.Popen(
         cmd, shell=False, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
+
+    mutex = threading.Lock()
+    def timeout():
+        while (not mutex.locked()):
+            time.sleep(0.5)
+
+            if (start_time + max_duration <= time.time() and mutex.acquire(False)):
+                os.kill(server.pid, signal.SIGTERM)
+                print("server start timed out.")
+                break
+        
+    timer = threading.Thread(target=timeout)
+    timer.start()
 
     read_mission = False
     for line in server.stdout:
@@ -99,37 +122,47 @@ def test_mods(mods):
 
         # Server should only read the mission once.
         if "Reading mission" in line:
-            if read_mission:
+            if read_mission and mutex.acquire(False):
                 return False
             read_mission = True
 
         # -autoInit isn't working properly.
         if "Autoinit is supported only for persistent missions" in line:
             raise Exception(
-                "Please enable persistent the server cfg and ensure the server is loading the config."
+                "please enable persistent the server cfg and ensure the server is loading the config."
             )
 
         # Server seems to have started properly.
-        if "Game started" in line:
-            return True
+        if "Game started" in line and mutex.acquire(False):
+            return time.time() - start_time
+
     return False
 
 
-print("Testing server without mods.")
-if not test_mods([]):
+print("Testing server without mods... ", end="")
+runtime = test_mods([], 60)
+if not runtime:
     raise Exception("Sever failed to launch correctly without any mods.")
+else:
+    print("Done.")
 
 active_mods = []
 failed_mods = []
 last_mod = None
 for mod in modset.mods:
-    print("Testing '" + str(mod) + "'.")
+    print("Testing '" + str(mod) + "'... ", end="")
     active_mods.append(mod)
 
-    if not test_mods(active_mods):
+    last_runtime = runtime
+    runtime = test_mods(active_mods, last_runtime + args.timeout)
+    if not runtime:
         print(str(mod) + " caused the server to fail. Disabling and continuing.")
         active_mods.remove(mod)
         failed_mods.append(mod)
+    else:
+        load_time = max(runtime - last_runtime, 0)
+        print("added " + str(round(load_time, 2)) + "s to load time.")
+    
 
 print("The following mods failed testing:")
 for mod in failed_mods:
