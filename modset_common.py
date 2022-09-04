@@ -2,8 +2,6 @@
 
 import os
 import re
-import io
-import sys
 import requests
 from modset_constants import *
 from bs4 import BeautifulSoup
@@ -103,7 +101,7 @@ class ModSet:
         out = open(outfile, "wt")
         out.write(preset)
         out.close()
-
+        
     @staticmethod
     def __get_published_file_details(ids):
         data = {"itemcount": str(len(ids))}
@@ -167,7 +165,7 @@ class ModSet:
     @staticmethod
     def __get_preset_mod_id(tr):
         url = tr.a.text
-        id = url[len(STEAM_URL_FORMAT) :]
+        id = url.split("id=")[1]
         return id
 
     @staticmethod
