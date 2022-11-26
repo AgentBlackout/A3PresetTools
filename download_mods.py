@@ -46,7 +46,7 @@ parser.add_argument(
     default=".",
 )
 parser.add_argument(
-    "--readible-names",
+    "--readable-names",
     help="use escaped mod names for folder directories (by default mod ids are used)",
     action="store_true"
 )
@@ -73,7 +73,7 @@ def get_mod_target_path(mod: common.Mod = None):
     if mod is None:
         return dir
     
-    if args.readible_names:
+    if args.readable_names:
         return dir + "/@" + mod.name
     else:
         return dir + "/@" + mod.id
