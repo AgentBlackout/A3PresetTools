@@ -84,15 +84,15 @@ if args.clean:
     expected_mod_folders = [get_mod_target_path(mod) for mod in modset.mods]
 
     for mod_folder in glob.glob(args.output_path + "/@*"):
-        if not mod_folder in expected_mod_folders:
+        if not os.path.abspath(mod_folder) in expected_mod_folders:
             print(
                 "Deleting '"
                 + mod_folder
             )
             shutil.rmtree(mod_folder)
-    print("Done")
+    print("Done\n")
 
-print("Preparing mod folders... ", end="", flush=True) 
+print("Preparing mod folders... ", flush=True, end="") 
 for mod in modset.mods:
     source = get_mod_source_path(mod)
     target = get_mod_target_path(mod)
@@ -134,7 +134,7 @@ if steamcmd.returncode != 0:
         "steamcmd failed for some reason. Please review its output."
     )
 else:
-    print("steamcmd done.")
+    print("steamcmd done.\n")
 
 def rename_files_lower(directory):
     for mod_file in glob.glob(glob.escape(directory) + "/*"):
@@ -151,7 +151,7 @@ if sys.platform == "linux" or sys.platform == "linux2":
         rename_files_lower(args.output_path + "/@" + mod.name)
     print("Done")
 
-print("Cleaning up download path... ", end="")
+print("Cleaning up download path... ", flush=True, end="")
 for mod in modset.mods:
     source = get_mod_source_path(mod)
     if not os.path.islink(source):
