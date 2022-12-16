@@ -156,7 +156,10 @@ for mod in modset.mods:
         print("added ~" + str(round(load_time, 2)) + "s to load time.")
     
 
-print("The following mods failed testing:")
-for mod in failed_mods:
-    print(mod, end=" ")
-print("")
+if len(failed_mods) == 0:
+    print("No mods failed testing")
+else:
+    print("The following mods failed testing:")
+    for mod in failed_mods:
+        print(mod, end=" ")
+    print("")
