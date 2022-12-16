@@ -19,12 +19,5 @@ args = parser.parse_args()
 preset = common.ModSet.from_preset(args.preset)
 
 loadString = ""
-for mod in preset.mods:
-    loadString += "@"
-    if args.readable_names:
-        loadString += mod.name
-    else:
-        loadString += mod.id
-    loadString += ";"
-
+common.get_load_order(loadString, args.readable_names)
 print(loadString)

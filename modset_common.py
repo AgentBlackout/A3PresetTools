@@ -7,6 +7,21 @@ from modset_constants import *
 from bs4 import BeautifulSoup
 
 
+def get_load_order(mods, readable_names):
+    if len(mods) == 0:
+        return None
+
+    load_order = ""
+
+    for mod in mods:
+        if readable_names:
+            load_order += "@" + mod.name + ";"
+        else:
+            load_order += "@" + mod.id + ";"
+
+    return load_order
+
+
 class Mod:
     @staticmethod
     def from_api_details(details):

@@ -36,6 +36,11 @@ parser.add_argument(
     default=60,
     type=int,
 )
+parser.add_argument(
+    "--readable-names",
+    help="use escaped mod names for folder directories (by default mod ids are used)",
+    action="store_true"
+)
 args, unknown = parser.parse_known_args()
 
 if len(unknown) > 0:
@@ -59,19 +64,6 @@ for mod in modset.mods:
             )
         )
 
-
-def get_mod_arg(mods):
-    if len(mods) == 0:
-        return None
-
-    mod_string = ""
-
-    for mod in mods:
-        mod_string += "@" + mod.name + ";"
-
-    return '-mod="' + mod_string + '"'
-
-
 # Pass any unknown argparse arguments to the server.
 server_cmd = [args.server_cmd, "-autoInit"]
 server_cmd.extend(unknown)
@@ -86,9 +78,9 @@ for arg in unknown:
 
 def test_mods(mods, max_duration):
     cmd = server_cmd.copy()
-    load_order = get_mod_arg(mods)
-    if not load_order is None:
-        cmd.append(load_order)
+    mod_arg = "-mod=" + common.get_load_order(mods, args.readable_names)
+    if not mod_arg is None:
+        cmd.append(mod_arg)
 
     # Print the command as a single string.
     if args.debug:
@@ -161,7 +153,7 @@ for mod in modset.mods:
         failed_mods.append(mod)
     else:
         load_time = max(runtime - last_runtime, 0)
-        print("added " + str(round(load_time, 2)) + "s to load time.")
+        print("added ~" + str(round(load_time, 2)) + "s to load time.")
     
 
 print("The following mods failed testing:")
