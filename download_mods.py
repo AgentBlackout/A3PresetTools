@@ -121,7 +121,7 @@ steamcmd_command = [
     "+login",
     args.username,
 ]
-if not args.password is None:
+if args.password is not None:
     steamcmd_command.append(args.password)
 for mod in modset.mods:
     steamcmd_command.extend(["+workshop_download_item", ARMA3_APPID, mod.id, "validate"])
