@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+ARMA3_APPID = "107410"
+
 STEAM_URL_FORMAT = "http://steamcommunity.com/sharedfiles/filedetails/?id="
 
 PUBLISHED_FILE_DETAILS_ENDPOINT = (
